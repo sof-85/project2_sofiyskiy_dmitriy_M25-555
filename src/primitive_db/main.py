@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-from src.primitive_db.engine import welcome
+import shlex
+from src.primitive_db.engine import run
 
 def main():
     print ('DB project is running!') 
@@ -7,6 +8,6 @@ def main():
 command = ''
 
 if __name__ == "__main__":
-    main()
-    while (command != 'exit'):
-        command = welcome()
+    run()
+    #while (command != 'exit'):
+    #    command = welcome()

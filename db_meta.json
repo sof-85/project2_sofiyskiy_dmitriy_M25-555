@@ -1,0 +1,24 @@
+{
+    "user2": {
+        "ID": "int",
+        "name": "string",
+        "isactive": "bool"
+    },
+    "user0": {
+        "ID": "int",
+        "name": "string",
+        "isactive": "bool"
+    },
+    "user1": {
+        "ID": "int",
+        "name": "string",
+        "isactive": "bool"
+    },
+    "ID:int": {
+        "ID": "int",
+        "name": "string"
+    },
+    "user6": {
+        "ID": "int"
+    }
+}
