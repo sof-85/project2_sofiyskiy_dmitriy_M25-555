@@ -1,19 +1,24 @@
-
-
-from core import create_table,delete,drop_table,format_table_output,get_table_columns,get_table_info,insert,list_tables,select,update
-from parser import parse_set_clause, parse_values, parse_where_clause
 import shlex
+
+from core import (
+    create_table,
+    delete,
+    drop_table,
+    format_table_output,
+    get_table_columns,
+    get_table_info,
+    insert,
+    list_tables,
+    select,
+    update,
+)
+from parser import parse_set_clause, parse_values, parse_where_clause
 from utils import load_metadata, save_metadata
 
-def welcome():
-    '''Функция выводит приглашение к вводу команды и возвращает введенную команду'''
-    import prompt
-    command = prompt.string('>>>Введите команду ')
-    return command
-   
+
 def print_help():
-    """Функция выводит справку по командам работы с данными"""
-   
+    """Выводит справку по командам работы с данными."""
+    
     print("\n***Процесс работы с таблицей***")
     print("Функции:")
     print("<command> create_table <имя_таблицы> <столбец1:тип> .. - создать таблицу")
@@ -21,22 +26,26 @@ def print_help():
     print("<command> drop_table <имя_таблицы> - удалить таблицу")
     
     print("\n***Операции с данными***")
-    print('<command> insert into <имя_таблицы> values (<значение1>, <значение2>, ...) - создать запись.')
-    print('<command> select from <имя_таблицы> where <столбец> = <значение> - прочитать записи по условию.')
-    print('<command> select from <имя_таблицы> - прочитать все записи.')
-    print('<command> update <имя_таблицы> set <столбец1> = <новое_значение1> where <столбец_условия> = <значение_условия> - обновить запись.')
-    print('<command> delete from <имя_таблицы> where <столбец> = <значение> - удалить запись.')
-    print('<command> info <имя_таблицы> - вывести информацию о таблице.')
-    
-    print("\nОбщие команды:")
+    print("Функции:")
+    print("<command> insert into <имя_таблицы> values "
+          "(<значение1>, <значение2>, ...) - создать запись.")
+    print("<command> select from <имя_таблицы> where <столбец> = <значение> "
+          "- прочитать записи по условию.")
+    print("<command> select from <имя_таблицы> - прочитать все записи.")
+    print("<command> update <имя_таблицы> set <столбец1> = <новое_значение1> "
+          "where <столбец_условия> = <значение_условия> - обновить запись.")
+    print("<command> delete from <имя_таблицы> where <столбец> = <значение> "
+          "- удалить запись.")
+    print("<command> info <имя_таблицы> - вывести информацию о таблице.")
     print("<command> exit - выход из программы")
-    print("<command> help - справочная информация\n")
-    
+    print("<command> help - справочная информация")
+
+
 def run():
     """
     Главная функция, запускающая основной цикл работы с базой данных.
     """
-    print("Добро пожаловать в примитивную базу данных!")
+    
     print_help()
 
     while True:
@@ -51,7 +60,7 @@ def run():
             metadata = load_metadata()
 
             if command == 'exit':
-                print("Выход из программы.")
+                print("Выход из программы")
                 break
 
             elif command == 'help':

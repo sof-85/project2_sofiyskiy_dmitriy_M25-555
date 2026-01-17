@@ -1,10 +1,53 @@
 # Для вспомогательных функций (например, работа с файлами)
 
-from constants import TABLE_DATA_PATH, TABLE_DATA_TYPE
+import json
+
+
+def load_metadata():
+    """
+    Загружает метаданные базы данных из файла.
+    """
+    try:
+        with open('metadata.json', encoding='utf-8') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return {}
+
+
+def save_metadata(metadata):
+    """
+    Сохраняет метаданные базы данных в файл.
+    """
+    from constants import META_FILE
+    with open(META_FILE, 'w', encoding='utf-8') as f:
+        json.dump(metadata, f, ensure_ascii=False, indent=2)
+
+
+def load_table_data(table_name):
+    """
+    Загружает данные таблицы из файла.
+    """
+    filename = f"{table_name}.json"
+    try:
+        with open(filename, encoding='utf-8') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return []
+
+
+def save_table_data(table_name, data):
+    """
+    Сохраняет данные таблицы в файл.
+    """
+    filename = f"{table_name}.json"
+    with open(filename, 'w', encoding='utf-8') as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+'''from constants import TABLE_DATA_PATH, TABLE_DATA_TYPE
 
 
 def load_metadata(filepath):
-    '''Функция читает метаданные из файла формата JSON'''
+    #Функция читает метаданные из файла формата JSON
     import json
     data = {}
     try:
@@ -21,7 +64,7 @@ def load_metadata(filepath):
     
     
 def save_metadata(filepath, data):
-    '''Функция сохраняет метаданные в файл формата JSON'''
+    #Функция сохраняет метаданные в файл формата JSON
     import json
  
     try:
@@ -36,7 +79,7 @@ def save_metadata(filepath, data):
         raise ValueError("База данных повреждена")
     
 def load_table_data(table_name):
-    '''Функция читает данные таблиц из каталога data из файла формата JSON'''
+    #Функция читает данные таблиц из каталога data из файла формата JSON
     import json
     from pathlib import Path
     data = []
@@ -60,7 +103,7 @@ def load_table_data(table_name):
     
     
 def save_table_data(table_name, data):
-    '''Функция сохраняет метаданные в файл формата JSON'''
+    #Функция сохраняет метаданные в файл формата JSON
     import json
     from pathlib import Path
     table_name = Path(TABLE_DATA_PATH + table_name + TABLE_DATA_TYPE)
@@ -73,4 +116,4 @@ def save_table_data(table_name, data):
         raise ValueError("База данных отсутствует")
     except json.JSONDecodeError:
         raise ValueError("База данных повреждена")
-
+'''
