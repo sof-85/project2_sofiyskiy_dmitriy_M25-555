@@ -1,0 +1,35 @@
+{
+    "1001": [
+        {
+            "name": "Alice"
+        },
+        {
+            "age": 45
+        },
+        {
+            "isactive": true
+        }
+    ],
+    "1002": [
+        {
+            "name": "Bob"
+        },
+        {
+            "age": 35
+        },
+        {
+            "isactive": true
+        }
+    ],
+    "1003": [
+        {
+            "name": "Jane"
+        },
+        {
+            "age": 25
+        },
+        {
+            "isactive": false
+        }
+    ]
+}

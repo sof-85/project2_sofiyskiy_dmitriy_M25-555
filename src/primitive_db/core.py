@@ -1,18 +1,18 @@
 # Файл реализует логику работы с таблицей и данными
-from utils import load_metadata, save_metadata
+from prettytable import PrettyTable
+from utils import save_metadata, load_metadata, load_table_data, save_table_data
 
+# Кэширование результатов запросов
+#query_cacher = create_cacher()
+
+
+#@handle_db_errors
 def create_table(metadata, table_name, columns):
-    #from utils import load_metadata, save_metadata
-    #print(metadata)
-    #print(table_name)
-    #print(columns)
+    '''Функция создает новую таблицу'''
     if (table_name not in metadata.keys()):
-        '''Функция создает новую таблицу'''
-        
-        #if (columns[0] != "ID:int"):
+
         columns.insert(0,"ID:int")
         new_columns = columns
-        print(new_columns)
         type_sym = ':'
         if type_sym in table_name:
             print("Ошибка в имени таблицы")
@@ -23,26 +23,37 @@ def create_table(metadata, table_name, columns):
             else:
                 print(f'Ошибка:Не могу создать столбец {new_columns[ncol]} - неправильный синтаксис команды')
                 return
-            
-              
-        split_col = map(lambda col: tuple(col.split(':')),new_columns)
-        #for scol in range (0,len(split_col)-1):
-         #   if scol in ['int','bool','string']:
-          #      pass
-        print (split_col)
-        col_dict=dict(split_col)
-        print(col_dict)
-        new_table = {table_name:col_dict}
-        print (set(col_dict.values()))
-        if (set(col_dict.values()).issubset({'int','bool','string'})):
+        print(new_columns)             
+        split_col = map(lambda col: tuple(col.split(type_sym)),new_columns)
+        print(split_col)
+        col_sets=list(split_col)
+        cols=[]
+        col_types = []
+        for item in col_sets:
+            cols.append(item[0])
+            col_types.append(item[1])
+
+        new_cols = []
+        new_cols.append(cols)
+        new_cols.append(col_types)
+        new_table = {table_name:new_cols}
+
+        print(new_table,'\n',new_table[table_name][1],'\n',set(new_table[table_name][1]))
+        
+        
+        if (set(new_table[table_name][1])).issubset({'int','bool','str'}):
             metadata.update(new_table)
             save_metadata("db_meta.json", metadata)
-            print (f"Таблица {table_name} успешно создана со столбцами {col_dict}")
+            col_list = ''
+            for col in range(0,len(columns)):
+                #print (columns[col])
+                col_list += (columns[col])
+                col_list += ' '
+            print (f"Таблица \'{table_name}\' успешно создана со столбцами {col_list}")
         else:
             print ("Ошибка. Проверьте правильность задания типов данных")
     else:
         print(f"Ошибка: Таблица {table_name} уже существует")     
-  
     return metadata
 
 def drop_table(metadata, table_name):
@@ -51,15 +62,137 @@ def drop_table(metadata, table_name):
         metadata.pop(table_name,None)
         new_metadata = metadata
         save_metadata("db_meta.json", new_metadata)
-        print(f"Таблица {table_name} успешно удалена")
+        print(f"Таблица \'{table_name}\' успешно удалена")
     else:
         print(f"Ошибка: Таблица {table_name} не существует")     
 
 def list_tables (metadata):
     '''Функция выводит список таблиц отсортированных по алфовиту'''
-    print(sorted(metadata.keys()))
+    #print(sorted(metadata.keys()))
     for key in sorted(metadata.keys()):
         print (f'- {key}')
+        
+#@handle_db_errors
+#@log_time
+def select(table_name, where_clause=None):
+    """
+    Выбирает записи из таблицы.
+    """
+    # Создаем ключ для кэша на основе таблицы и условия
+    cache_key = f"select_{table_name}_{str(where_clause)}"
+
+    def get_table_data():
+        table_data = load_table_data(table_name)
+
+        if not where_clause:
+            return table_data
+
+        filtered_data = []
+        for record in table_data:
+            match = True
+            for column, value in where_clause.items():
+                if column not in record or record[column] != value:
+                    match = False
+                    break
+            if match:
+                filtered_data.append(record)
+
+        return filtered_data
+
+    # Используем кэшер для получения данных
+    #return query_cacher(cache_key, get_table_data)
+
+
+#@handle_db_errors
+def update(table_name, set_clause, where_clause):
+    """
+    Обновляет записи в таблице.
+    """
+    table_data = load_table_data(table_name)
+    updated_count = 0
+
+    for record in table_data:
+        match = True
+        for column, value in where_clause.items():
+            if column not in record or record[column] != value:
+                match = False
+                break
+
+        if match:
+            for column, new_value in set_clause.items():
+                if column in record and column != 'ID':
+                    record[column] = new_value
+            updated_count += 1
+
+    if updated_count > 0:
+        save_table_data(table_name, table_data)
+
+    return table_data#, updated_count
+
+
+#@handle_db_errors
+#@confirm_action("удаление записей")
+def delete(table_name, where_clause):
+    """
+    Удаляет записи из таблицы.
+    """
+    table_data = load_table_data(table_name)
+    initial_count = len(table_data)
+
+    filtered_data = []
+    for record in table_data:
+        match = True
+        for column, value in where_clause.items():
+            if column not in record or record[column] != value:
+                match = False
+                break
+
+        if not match:
+            filtered_data.append(record)
+
+    deleted_count = initial_count - len(filtered_data)
+
+    if deleted_count > 0:
+        save_table_data(table_name, filtered_data)
+
+    return filtered_data, deleted_count
+
+
+#@handle_db_errors
+def format_table_output(records, columns):
+    """
+    Форматирует записи в виде красивой таблицы.
+    """
+    if not records:
+        return "Нет данных для отображения."
+
+    table = PrettyTable()
+    column_names = [col.split(':')[0] for col in columns]
+    table.field_names = column_names
+
+    for record in records:
+        row = [record.get(col_name, '') for col_name in column_names]
+        table.add_row(row)
+
+    return table.get_string()
+
+
+#@handle_db_errors
+def get_table_info(metadata, table_name):
+    """
+    Возвращает информацию о таблице.
+    """
+    if table_name not in metadata:
+        raise ValueError(f'Таблица "{table_name}" не существует.')
+
+    table_data = load_table_data(table_name)
+
+    return {
+        'name': table_name,
+        'columns': metadata[table_name],
+        'record_count': len(table_data)
+    }
+
 
 
 
@@ -93,4 +226,245 @@ list_tables(metadata)
 
 metadata = load_metadata("db_meta.json")
 create_table(metadata,"user3",["ID:int","name:string","name:string","isactive:bool","sdf:int"])
-#drop_table(metadata,"user3")'''
+#drop_table(metadata,"user3")
+
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+from prettytable import PrettyTable
+
+from decorators import confirm_action, create_cacher, handle_db_errors, log_time
+from utils import load_table_data, save_table_data
+
+# Создаем кэшер для результатов запросов
+query_cacher = create_cacher()
+
+
+@handle_db_errors
+def create_table(metadata, table_name, columns):
+    """Создает новую таблицу в метаданных."""
+    if table_name in metadata:
+        raise ValueError(f'Таблица "{table_name}" уже существует.')
+    
+    from constants import DEFAULT_COLUMNS, VALID_TYPES
+    allowed_types = VALID_TYPES
+    table_columns = DEFAULT_COLUMNS.copy()
+
+    for column in columns:
+        if ':' not in column:
+            raise ValueError(
+                f'Некорректный формат столбца: {column}. Используйте "имя:тип"'
+            )
+        
+        col_name, col_type = column.split(':', 1)
+        col_type = col_type.lower()
+        
+        if col_type not in allowed_types:
+            raise ValueError(
+                f'Неподдерживаемый тип данных: {col_type}. Допустимые типы: {", ".join(allowed_types)}'
+            )
+            
+        table_columns.append(f'{col_name}:{col_type}')
+
+    metadata[table_name] = table_columns
+    return metadata
+
+
+@handle_db_errors
+@confirm_action('удаление таблицы')
+def drop_table(metadata, table_name):
+    """Удаляет таблицу из метаданных."""
+    if table_name not in metadata:
+        raise ValueError(f'Таблица "{table_name}" не существует.')
+    
+    del metadata[table_name]
+    return metadata
+
+
+@handle_db_errors
+def list_tables(metadata):
+    """Возвращает список всех таблиц."""
+    return list(metadata.keys())
+
+
+@handle_db_errors
+def get_table_columns(metadata, table_name):
+    """Возвращает список столбцов таблицы."""
+    if table_name not in metadata:
+        raise ValueError(f'Таблица "{table_name}" не существует.')
+    
+    return metadata[table_name]
+
+
+@handle_db_errors
+def get_table_schema(metadata, table_name):
+    """Возвращает схему таблицы в виде словаря {имя_столбца: тип}."""
+    if table_name not in metadata:
+        raise ValueError(f'Таблица "{table_name}" не существует.')
+    
+    schema = {}
+    for col_def in metadata[table_name]:
+        col_name, col_type = col_def.split(':')
+        schema[col_name] = col_type
+    return schema
+
+
+@handle_db_errors
+@log_time
+def insert(metadata, table_name, values):
+    """Вставляет новую запись в таблицу."""
+    if table_name not in metadata:
+        raise ValueError(f'Таблица "{table_name}" не существует.')
+    
+    table_data = load_table_data(table_name)
+    schema = get_table_schema(metadata, table_name)
+    column_names = list(schema.keys())
+
+    expected_values_count = len(column_names) - 1
+    if len(values) != expected_values_count:
+        raise ValueError(
+            f'Ожидается {expected_values_count} значений, получено {len(values)}'
+        )
+
+    if table_data:
+        new_id = max(record['ID'] for record in table_data) + 1
+    else:
+        new_id = 1
+
+    new_record = {'ID': new_id}
+
+    for i, col_name in enumerate(column_names[1:], start=0):
+        value = values[i]
+        expected_type = schema[col_name]
+
+        if expected_type == 'int' and not isinstance(value, int):
+            raise ValueError(
+                f'Столбец "{col_name}" ожидает тип int, получено {type(value).__name__}'
+            )
+        elif expected_type == 'bool' and not isinstance(value, bool):
+            raise ValueError(
+                f'Столбец "{col_name}" ожидает тип bool, получено {type(value).__name__}'
+            )
+        elif expected_type == 'str' and not isinstance(value, str):
+            raise ValueError(
+                f'Столбец "{col_name}" ожидает тип str, получено {type(value).__name__}'
+            )
+
+        new_record[col_name] = value
+
+    table_data.append(new_record)
+    save_table_data(table_name, table_data)
+
+    return table_data, new_id
+
+
+@handle_db_errors
+@log_time
+def select(table_name, where_clause=None):
+    """Выбирает записи из таблицы."""
+    # Создаем ключ для кэша на основе таблицы и условия
+    cache_key = f'select_{table_name}_{str(where_clause)}'
+
+    def get_table_data():
+        table_data = load_table_data(table_name)
+
+        if not where_clause:
+            return table_data
+
+        filtered_data = []
+        for record in table_data:
+            match = True
+            for column, value in where_clause.items():
+                if column not in record or record[column] != value:
+                    match = False
+                    break
+            if match:
+                filtered_data.append(record)
+
+        return filtered_data
+
+    # Используем кэшер для получения данных
+    return query_cacher(cache_key, get_table_data)
+
+
+@handle_db_errors
+def update(table_name, set_clause, where_clause):
+    """Обновляет записи в таблице."""
+    table_data = load_table_data(table_name)
+    updated_count = 0
+
+    for record in table_data:
+        match = True
+        for column, value in where_clause.items():
+            if column not in record or record[column] != value:
+                match = False
+                break
+
+        if match:
+            for column, new_value in set_clause.items():
+                if column in record and column != 'ID':
+                    record[column] = new_value
+            updated_count += 1
+
+    if updated_count > 0:
+        save_table_data(table_name, table_data)
+
+    return table_data, updated_count
+
+
+@handle_db_errors
+@confirm_action('удаление записей')
+def delete(table_name, where_clause):
+    """Удаляет записи из таблицы."""
+    table_data = load_table_data(table_name)
+    initial_count = len(table_data)
+
+    filtered_data = []
+    for record in table_data:
+        match = True
+        for column, value in where_clause.items():
+            if column not in record or record[column] != value:
+                match = False
+                break
+
+        if not match:
+            filtered_data.append(record)
+
+    deleted_count = initial_count - len(filtered_data)
+
+    if deleted_count > 0:
+        save_table_data(table_name, filtered_data)
+
+    return filtered_data, deleted_count
+
+
+@handle_db_errors
+def format_table_output(records, columns):
+    """Форматирует записи в виде красивой таблицы."""
+    if not records:
+        return 'Нет данных для отображения.'
+
+    table = PrettyTable()
+    column_names = [col.split(':')[0] for col in columns]
+    table.field_names = column_names
+
+    for record in records:
+        row = [record.get(col_name, '') for col_name in column_names]
+        table.add_row(row)
+
+    return table.get_string()
+
+
+@handle_db_errors
+def get_table_info(metadata, table_name):
+    """Возвращает информацию о таблице."""
+    if table_name not in metadata:
+        raise ValueError(f'Таблица "{table_name}" не существует.')
+
+    table_data = load_table_data(table_name)
+
+    return {
+        'name': table_name,
+        'columns': metadata[table_name],
+        'record_count': len(table_data)
+    }
+    
+    '''

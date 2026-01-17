@@ -1,24 +1,44 @@
 {
-    "user2": {
-        "ID": "int",
-        "name": "string",
-        "isactive": "bool"
-    },
-    "user0": {
-        "ID": "int",
-        "name": "string",
-        "isactive": "bool"
-    },
-    "user1": {
-        "ID": "int",
-        "name": "string",
-        "isactive": "bool"
-    },
-    "ID:int": {
-        "ID": "int",
-        "name": "string"
-    },
-    "user6": {
-        "ID": "int"
-    }
+    "user1": [
+        [
+            "ID",
+            "name",
+            "age",
+            "isactive"
+        ],
+        [
+            "int",
+            "str",
+            "int",
+            "bool"
+        ]
+    ],
+    "user": [
+        [
+            "ID",
+            "name",
+            "age",
+            "isactive"
+        ],
+        [
+            "int",
+            "str",
+            "int",
+            "bool"
+        ]
+    ],
+    "user3": [
+        [
+            "ID",
+            "name",
+            "age",
+            "isactive"
+        ],
+        [
+            "int",
+            "str",
+            "int",
+            "bool"
+        ]
+    ]
 }
