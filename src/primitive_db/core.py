@@ -1,5 +1,6 @@
-from .decorators import confirm_action, create_cacher, handle_db_errors, log_time
 from prettytable import PrettyTable
+
+from .decorators import confirm_action, create_cacher, handle_db_errors, log_time
 from .utils import load_table_data, save_table_data
 
 
@@ -9,7 +10,7 @@ def create_table(metadata, table_name, columns):
     if table_name in metadata:
         raise ValueError(f'Таблица "{table_name}" уже существует.')
 
-    from constants import DEFAULT_COLUMNS, VALID_TYPES
+    from .constants import DEFAULT_COLUMNS, VALID_TYPES
     allowed_types = VALID_TYPES
     table_columns = DEFAULT_COLUMNS.copy()
 

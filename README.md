@@ -90,7 +90,7 @@ database
 
 
 Пример создания просмотра и удаления таблиц:
-https://asciinema.org/a/756629
+https://asciinema.org/a/tsihqUQl8DOVYHF3
 
 
 
@@ -128,3 +128,4 @@ https://asciinema.org/a/756629
 Количество записей: 0 
 
 Пример работы с таблицами:
+https://asciinema.org/a/YP283LuDhPAHFlXM
