@@ -3,7 +3,7 @@
 
 def main():
     '''Точка запуска программы'''
-    from engine import run
+    from .engine import run
     #print ('DB project is running!')
     run() 
 

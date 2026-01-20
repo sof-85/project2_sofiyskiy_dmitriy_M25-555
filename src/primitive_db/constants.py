@@ -1,4 +1,6 @@
-META_FILE = "src/primitive_db/metadata.json"
+#Константы программы
+
+META_FILE = "db_meta.json"
 TABLE_DATA_PATH = "src/primitive_db/data/"
 TABLE_DATA_TYPE = ".json"
 

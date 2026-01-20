@@ -1,9 +1,0 @@
-{
-    "users": [
-        {
-            "id": 2,
-            "username": "Jane",
-            "is_active": true
-        }
-    ]
-}

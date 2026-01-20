@@ -1,9 +1,22 @@
 
 
-from core import create_table,delete,drop_table,format_table_output,get_table_columns,get_table_info,insert,list_tables,select,update
-from parser import parse_set_clause, parse_values, parse_where_clause
 import shlex
-from utils import load_metadata, save_metadata
+
+from .core import (
+    create_table,
+    delete,
+    drop_table,
+    format_table_output,
+    get_table_columns,
+    get_table_info,
+    insert,
+    list_tables,
+    select,
+    update,
+)
+from .parser import parse_set_clause, parse_values, parse_where_clause
+from .utils import load_metadata, save_metadata
+
 
 def welcome():
     '''Функция выводит приглашение к вводу команды и возвращает введенную команду'''
@@ -93,10 +106,10 @@ def run():
 
 
 def _handle_create_table(metadata, args):
-    """Обрабатывает команду create_table."""
+    """Функция обрабатывает команду create_table."""
     if len(args) < 3:
-        print("Ошибка: Недостаточно аргументов. Использование: "
-              "create_table <имя_таблицы> <столбец1:тип> ...")
+        print("Ошибка: Недостаточно аргументов."
+              "Формат команды: create_table <имя_таблицы> <столбец1:тип> ...")
         return
 
     table_name = args[1]
@@ -114,7 +127,7 @@ def _handle_drop_table(metadata, args):
     """Обрабатывает команду drop_table."""
     if len(args) != 2:
         print("Ошибка: Неверное количество аргументов. "
-              "Использование: drop_table <имя_таблицы>")
+              "Формат команды: drop_table <имя_таблицы>")
         return
 
     table_name = args[1]
@@ -256,7 +269,7 @@ def _handle_info(metadata, args):
     """Обрабатывает команду info."""
     if len(args) != 2:
         print("Ошибка: Неверное количество аргументов. "
-              "Использование: info <имя_таблицы>")
+              "Формат команды: info <имя_таблицы>")
         return
 
     table_name = args[1]

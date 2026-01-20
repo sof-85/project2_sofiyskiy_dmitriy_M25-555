@@ -1,17 +1,11 @@
+from .decorators import confirm_action, create_cacher, handle_db_errors, log_time
 from prettytable import PrettyTable
-
-from decorators import confirm_action, create_cacher, handle_db_errors, log_time
-from utils import load_table_data, save_table_data
-
-# Создаем кэшер для результатов запросов
-query_cacher = create_cacher()
+from .utils import load_table_data, save_table_data
 
 
 @handle_db_errors
 def create_table(metadata, table_name, columns):
-    """
-    Создает новую таблицу в метаданных.
-    """
+    """Создает новую таблицу"""
     if table_name in metadata:
         raise ValueError(f'Таблица "{table_name}" уже существует.')
 
@@ -23,7 +17,7 @@ def create_table(metadata, table_name, columns):
         if ':' not in column:
             raise ValueError(
                 f'Некорректный формат столбца: {column}. '
-                'Используйте "имя:тип"'
+                'Формат должен быть "имя:тип"'
             )
 
         col_name, col_type = column.split(':', 1)
@@ -42,11 +36,9 @@ def create_table(metadata, table_name, columns):
 
 
 @handle_db_errors
-@confirm_action("удаление таблицы")
+@confirm_action("Удаление таблицы")
 def drop_table(metadata, table_name):
-    """
-    Удаляет таблицу из метаданных.
-    """
+    """Удаляет таблицу из метаданных"""
     if table_name not in metadata:
         raise ValueError(f'Таблица "{table_name}" не существует.')
 
@@ -56,17 +48,13 @@ def drop_table(metadata, table_name):
 
 @handle_db_errors
 def list_tables(metadata):
-    """
-    Возвращает список всех таблиц.
-    """
+    """Функция возвращает список всех таблиц """
     return list(metadata.keys())
 
 
 @handle_db_errors
 def get_table_columns(metadata, table_name):
-    """
-    Возвращает список столбцов таблицы.
-    """
+    """Функция возвращает список столбцов таблицы"""
     if table_name not in metadata:
         raise ValueError(f'Таблица "{table_name}" не существует.')
 
@@ -75,9 +63,7 @@ def get_table_columns(metadata, table_name):
 
 @handle_db_errors
 def get_table_schema(metadata, table_name):
-    """
-    Возвращает схему таблицы в виде словаря {имя_столбца: тип}.
-    """
+    """Функция возвращает схему таблицы"""
     if table_name not in metadata:
         raise ValueError(f'Таблица "{table_name}" не существует.')
 
@@ -91,9 +77,7 @@ def get_table_schema(metadata, table_name):
 @handle_db_errors
 @log_time
 def insert(metadata, table_name, values):
-    """
-    Вставляет новую запись в таблицу.
-    """
+    """Вставляет новую запись в таблицу"""
     if table_name not in metadata:
         raise ValueError(f'Таблица "{table_name}" не существует.')
 
@@ -121,18 +105,18 @@ def insert(metadata, table_name, values):
 
         if expected_type == 'int' and not isinstance(value, int):
             raise ValueError(
-                f'Столбец "{col_name}" ожидает тип int, '
-                f'получено {type(value).__name__}'
+                f'Столбец "{col_name}" содержит тип int, '
+                f'введен {type(value).__name__}'
             )
         elif expected_type == 'bool' and not isinstance(value, bool):
             raise ValueError(
-                f'Столбец "{col_name}" ожидает тип bool, '
-                f'получено {type(value).__name__}'
+                f'Столбец "{col_name}" содержит тип bool, '
+                f'введен {type(value).__name__}'
             )
         elif expected_type == 'str' and not isinstance(value, str):
             raise ValueError(
-                f'Столбец "{col_name}" ожидает тип str, '
-                f'получено {type(value).__name__}'
+                f'Столбец "{col_name}" содержит тип str, '
+                f'введен {type(value).__name__}'
             )
 
         new_record[col_name] = value
@@ -146,9 +130,7 @@ def insert(metadata, table_name, values):
 @handle_db_errors
 @log_time
 def select(table_name, where_clause=None):
-    """
-    Выбирает записи из таблицы.
-    """
+    """Функция производит выборку записей из таблицы"""
     # Создаем ключ для кэша на основе таблицы и условия
     cache_key = f"select_{table_name}_{str(where_clause)}"
 
@@ -176,9 +158,8 @@ def select(table_name, where_clause=None):
 
 @handle_db_errors
 def update(table_name, set_clause, where_clause):
-    """
-    Обновляет записи в таблице.
-    """
+    """Функция производит обновление записей в таблице"""
+
     table_data = load_table_data(table_name)
     updated_count = 0
 
@@ -202,11 +183,9 @@ def update(table_name, set_clause, where_clause):
 
 
 @handle_db_errors
-@confirm_action("удаление записей")
+@confirm_action("Удаление записей")
 def delete(table_name, where_clause):
-    """
-    Удаляет записи из таблицы.
-    """
+    """Функция производит удаление записей из таблицы"""
     table_data = load_table_data(table_name)
     initial_count = len(table_data)
 
@@ -231,9 +210,7 @@ def delete(table_name, where_clause):
 
 @handle_db_errors
 def format_table_output(records, columns):
-    """
-    Форматирует записи в виде красивой таблицы.
-    """
+    """Функция выводит таблицу PrettyTable"""
     if not records:
         return "Нет данных для отображения."
 
@@ -250,9 +227,7 @@ def format_table_output(records, columns):
 
 @handle_db_errors
 def get_table_info(metadata, table_name):
-    """
-    Возвращает информацию о таблице.
-    """
+    """Функция возвращает информацию о таблице"""
     if table_name not in metadata:
         raise ValueError(f'Таблица "{table_name}" не существует.')
 
@@ -263,3 +238,6 @@ def get_table_info(metadata, table_name):
         'columns': metadata[table_name],
         'record_count': len(table_data)
     }
+    
+#Кэшер для запросов
+query_cacher = create_cacher()
